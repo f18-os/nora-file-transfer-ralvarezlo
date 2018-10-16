@@ -1,10 +1,11 @@
 #! /usr/bin/env python3
 
 # Echo client program
-import socket, sys, re
+import socket, sys, re, os
 import params
 from framedSock import FramedStreamSock
 from threading import Thread
+from threading import Lock
 import time
 
 myHost = "50001"
@@ -72,11 +73,14 @@ class ClientThread(Thread):
            sys.exit(1)
 
         fs = FramedStreamSock(s, debug=debug)
-
+        
+        
         while (1): 
             try:
-                fname = input("Please input name: ")
+                fname = input("Please input name or 'exit' to end process:\n")
+                if(fname=="exit"): os._exit(1)
                 myFile = open(fname,'r')
+                mlock.release()
                 break
             except IOError:
                 print("File doesn't exist, try again.")
@@ -96,6 +100,8 @@ class ClientThread(Thread):
         print("received:", fs.receivemsg())
         """
 
+mlock = Lock()
 for i in range(100):
+    mlock.acquire()
     ClientThread(serverHost, serverPort, debug)
 
