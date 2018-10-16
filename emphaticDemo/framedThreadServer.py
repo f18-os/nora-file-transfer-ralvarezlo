@@ -38,15 +38,15 @@ class ServerThread(Thread):
             if msg:
                 fileString = msg.decode().replace("\x00", "\n")
 
-                if not fileODone:
+                if not fileODone: #To Create a New File
                     auxS = fileString.split("//myname")
                     fName = auxS[0]
                     if fName in myDict:
-                        print("It's in Dictionary: " + fName)
+                        print("It's in Lock Dictionary: " + fName)
                         myLock = myDict[fName]
                         myLock.acquire()
                     else:
-                        print("It's not in Dictionary: " + fName)
+                        print("It's not in Lock Dictionary: " + fName)
                         myDict[fName] = Lock()
                         myDict[fName].acquire()
                         print("lock done")
