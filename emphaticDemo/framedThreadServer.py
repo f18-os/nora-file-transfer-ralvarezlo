@@ -37,7 +37,6 @@ class ServerThread(Thread):
         while True:
             print("initialized loop")
             msg = self.fsock.receivemsg()
-            print("Msg is" + msg.decode())
             if msg:
                 print("message received")
                 fileString = msg.decode().replace("\x00", "\n")
@@ -53,6 +52,7 @@ class ServerThread(Thread):
                         print("It's not in Dictionary: " + fName)
                         myDict[fName] = Lock()
                         myDict[fName].acquire()
+                        print("lock done")
 
                     myPath = os.path.join(os.getcwd()+"/receiving/"+auxS[0])
                     myFile = open(myPath, "w+")
@@ -60,14 +60,21 @@ class ServerThread(Thread):
                     fileODone = True
                     print("File Opened: " + fName)
                 else: 
-                    print("In Msg, not fileODone")
+                    print("In Msg, fileODone true")
                     myFile.write(fileString)
-            else:
+                msg = msg + b"!"
+                requestNum = ServerThread.requestCount
+                time.sleep(0.001)
+                ServerThread.requestCount = requestNum + 1
+                msg = ("%s! (%d)" % (msg, requestNum)).encode()
+                self.fsock.sendmsg(msg)
+
+            if not msg:
                 print("File Ending")
                 myDict[fName].release() #Release Lock
                 myDict.pop(fName) #Remove Key
                 myFile.close()
-                break
+                return
             """
             if not msg:
                 if self.debug: print(self.fsock, "server thread done")
