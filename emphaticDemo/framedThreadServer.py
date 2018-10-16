@@ -31,14 +31,11 @@ class ServerThread(Thread):
         self.fsock, self.debug = FramedStreamSock(sock, debug), debug
         self.start()
     def run(self):
-        print("Thread Running")
         fileODone = False
         fName = ""
         while True:
-            print("initialized loop")
             msg = self.fsock.receivemsg()
             if msg:
-                print("message received")
                 fileString = msg.decode().replace("\x00", "\n")
 
                 if not fileODone:
@@ -70,7 +67,7 @@ class ServerThread(Thread):
                 self.fsock.sendmsg(msg)
 
             if not msg:
-                print("File Ending")
+                print("File Ending: "+fName)
                 myDict[fName].release() #Release Lock
                 myDict.pop(fName) #Remove Key
                 myFile.close()
