@@ -31,20 +31,26 @@ class ServerThread(Thread):
         self.fsock, self.debug = FramedStreamSock(sock, debug), debug
         self.start()
     def run(self):
+        print("Thread Running")
         fileODone = False
-        fName
+        fName = ""
         while True:
+            print("initialized loop")
             msg = self.fsock.receivemsg()
+            print("Msg is" + msg.decode())
             if msg:
+                print("message received")
                 fileString = msg.decode().replace("\x00", "\n")
 
                 if not fileODone:
                     auxS = fileString.split("//myname")
                     fName = auxS[0]
                     if fName in myDict:
+                        print("It's in Dictionary: " + fName)
                         myLock = myDict[fName]
                         myLock.acquire()
                     else:
+                        print("It's not in Dictionary: " + fName)
                         myDict[fName] = Lock()
                         myDict[fName].acquire()
 
@@ -52,9 +58,12 @@ class ServerThread(Thread):
                     myFile = open(myPath, "w+")
                     myFile.write(auxS[1])
                     fileODone = True
-                
-                myFile.write(fileString)
+                    print("File Opened: " + fName)
+                else: 
+                    print("In Msg, not fileODone")
+                    myFile.write(fileString)
             else:
+                print("File Ending")
                 myDict[fName].release() #Release Lock
                 myDict.pop(fName) #Remove Key
                 myFile.close()
@@ -78,4 +87,5 @@ myDict = dict()
 
 while True:
     sock, addr = lsock.accept()
+    print("Socket Accepted, calling thread")
     ServerThread(sock, debug)
