@@ -32,6 +32,7 @@ class ServerThread(Thread):
         self.start()
     def run(self):
         fileODone = False
+        fName
         while True:
             msg = self.fsock.receivemsg()
             if msg:
@@ -39,11 +40,13 @@ class ServerThread(Thread):
 
                 if not fileODone:
                     auxS = fileString.split("//myname")
-                    if auxS[0] in myDict:
-                        myLock = myDict(auxS[0])
+                    fName = auxS[0]
+                    if fName in myDict:
+                        myLock = myDict[fName]
                         myLock.acquire()
                     else:
-                        myDict[auxS[0]] = Lock()
+                        myDict[fName] = Lock()
+                        myDict[fName].acquire()
 
                     myPath = os.path.join(os.getcwd()+"/receiving/"+auxS[0])
                     myFile = open(myPath, "w+")
@@ -52,6 +55,8 @@ class ServerThread(Thread):
                 
                 myFile.write(fileString)
             else:
+                myDict[fName].release() #Release Lock
+                myDict.pop(fName) #Remove Key
                 myFile.close()
                 break
             """
