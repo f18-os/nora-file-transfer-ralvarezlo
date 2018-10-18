@@ -38,14 +38,14 @@ class ServerThread(Thread):
             if msg:
                 fileString = msg.decode().replace("\x00", "\n")
 
-                if not fileODone: #To Create a New File
+                if not fileODone: #To Create a New File if it's the first line received
                     auxS = fileString.split("//myname")
                     fName = auxS[0]
-                    if fName in myDict:
+                    if fName in myDict: #If file exist we should acquire the corresponding lock in the dictionary to wait for the colliding thread to end
                         print("It's in Lock Dictionary: " + fName)
                         myLock = myDict[fName]
                         myLock.acquire()
-                    else:
+                    else: #If it doesn't we create the lock and acquire it
                         print("It's not in Lock Dictionary: " + fName)
                         myDict[fName] = Lock()
                         myDict[fName].acquire()
@@ -56,7 +56,7 @@ class ServerThread(Thread):
                     myFile.write(auxS[1])
                     fileODone = True
                     print("File Opened: " + fName)
-                else: 
+                else: #If it's another line we just append it
                     print("In Msg, fileODone true")
                     myFile.write(fileString)
                 msg = msg + b"!"
@@ -66,30 +66,16 @@ class ServerThread(Thread):
                 msg = ("%s! (%d)" % (msg, requestNum)).encode()
                 self.fsock.sendmsg(msg)
 
-            if not msg:
+            if not msg: #When we have stopped receiving messages
                 print("File Ending: "+fName)
                 myDict[fName].release() #Release Lock
                 myDict.pop(fName) #Remove Key
                 myFile.close()
                 return
-            """
-            if not msg:
-                if self.debug: print(self.fsock, "server thread done")
-                return
-            """
 
-
-            """
-            requestNum = ServerThread.requestCount
-            time.sleep(0.001)
-            ServerThread.requestCount = requestNum + 1
-            msg = ("%s! (%d)" % (msg, requestNum)).encode()
-            self.fsock.sendmsg(msg)
-            """
 global myDict
 myDict = dict()
 
 while True:
     sock, addr = lsock.accept()
-    print("Socket Accepted, calling thread")
     ServerThread(sock, debug)

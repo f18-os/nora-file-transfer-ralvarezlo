@@ -91,15 +91,7 @@ class ClientThread(Thread):
         fs.sendmsg(auxStr.encode())
         fs.receivemsg() #Just to make sure the message is sent
 
-        """
-        print("sending hello world")
-        fs.sendmsg(b"hello world")
-        print("received:", fs.receivemsg())
-
-        fs.sendmsg(b"hello world")
-        print("received:", fs.receivemsg())
-        """
-
+#Locks are used to make sure to ask the user for the file, when it's selected the lock will be released and it will transfer in the background
 mlock = Lock()
 for i in range(100):
     mlock.acquire()
